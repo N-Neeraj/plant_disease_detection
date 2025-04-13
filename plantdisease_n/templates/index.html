@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🌿 Plant Disease Detection</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      background-color: #f4f9f4;
+      color: #333;
+    }
+
+    h1 {
+      color: #2c7a7b;
+    }
+
+    form {
+      margin-top: 20px;
+      padding: 20px;
+      border: 2px dashed #cbd5e0;
+      border-radius: 12px;
+      background-color: #ffffff;
+      width: 300px;
+      text-align: center;
+    }
+
+    input[type="file"], select, button {
+      margin: 10px 0;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #319795;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2c7a7b;
+    }
+
+    #preview {
+      margin-top: 20px;
+      max-height: 250px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      display: none;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌿 Plant Disease Detection</h1>
+
+  <form id="uploadForm">
+    <input type="file" id="image" name="image" accept="image/*" required><br>
+    <select name="model" id="model">
+      <option value="cnn">CNN (ResNet50)</option>
+      <option value="vit">ViT (Transformer)</option>
+    </select><br>
+    <button type="submit">Predict</button>
+  </form>
+
+  <img id="preview" src="#" alt="Image Preview">
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const imageInput = document.getElementById('image');
+    const preview = document.getElementById('preview');
+    const result = document.getElementById('result');
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      result.innerText = "⏳ Predicting...";
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.prediction) {
+          result.innerText = "🌱 Predicted Disease: " + data.prediction;
+        } else if (data.error) {
+          result.innerText = "❌ Error: " + data.error;
+        } else {
+          result.innerText = "⚠️ Unknown response.";
+        }
+      } catch (err) {
+        result.innerText = "❌ Request failed. Please try again.";
+        console.error(err);
+      }
+    });
+  </script>
+
+</body>
+</html>
